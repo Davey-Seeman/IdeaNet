@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, set, push, query,orderByKey,onChildAdded,update} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, set, push, orderByKey,onChildAdded,update, query, orderByChild, get} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -99,14 +99,18 @@ function addData(){
     window.location.reload();
 };
 
-function addLike(currentPost,likesNumber){
-    update(ref(database,'Ideas/'+currentPost.getAttribute("key")+'/data'),{
-        likes: likesNumber + 1
-    })
+function addLike(currentPost){
+    var key = currentPost.getAttribute("key")
+    const likes = ref(database, 'Ideas/' + key + '/data/likes');
+    get(likes).then((snapshot) => {
+        const likesNumber = snapshot.val();
+        update(ref(database,'Ideas/'+currentPost.getAttribute("key")+'/data'),{
+        likes: likesNumber + 1})
 
-    document.getElementById("likesCount" + currentPost.id.match(/\d+/g)[0]).innerHTML = likesNumber + 1 //add 1 to the on screen like count //use id no matter what for onscreen changes
+        document.getElementById("likesCount" + currentPost.id.match(/\d+/g)[0]).innerHTML = likesNumber + 1 //add 1 to the on screen like count //use id no matter what for onscreen changes
 
-    document.getElementById("likesPost" + currentPost.id.match(/\d+/g)[0]).innerHTML = likesNumber + 1 //add 1 to the browsing page on-hover like count
+        document.getElementById("likesPost" + currentPost.id.match(/\d+/g)[0]).innerHTML = likesNumber + 1 //add 1 to the browsing page on-hover like count
+    });
 };
 
 function reported(currentPost){ //adds report to database
@@ -228,7 +232,6 @@ function gotList(allData,dataHold) //shows all the ideas on the browsing feed
 
     //allData = data.val() //val function turns data into dictionary
     var keyValues = Object.keys(allData);
-    console.log(allData)
 
     var multiDigitPosts = [];
 
@@ -266,4 +269,32 @@ function gotList(allData,dataHold) //shows all the ideas on the browsing feed
         oldDataHold = dataHold;
 };
 
-export { addData, reset, addLike, reported, addComment };
+function sortByLikes(){
+    document.getElementById("postSection").innerHTML = "";
+    const ordering = query(ref(database, 'Ideas'), orderByChild('data/likes'));
+    var backData = []
+    var backKeys = []
+    onChildAdded(ordering, (snapshot, childKey) => {
+        const data = snapshot.val(); 
+        backData.push(data);
+        backKeys.push(childKey)
+    });
+    
+    for (let i = 0; i < backData.length; i++) {
+        showPost(backData[backData.length-i-1],i+1,backKeys[backData.length-i-1]);
+    }
+}
+
+function sortByAlpha(){
+    document.getElementById("postSection").innerHTML = "";
+    const ordering = query(ref(database, 'Ideas'), orderByChild('data/title'));
+    var ideaNumber = 1;
+    onChildAdded(ordering, (snapshot, childKey) => {
+        ideaNumber++;
+        const data = snapshot.val(); 
+        showPost(data,ideaNumber,childKey);
+    });
+    
+}
+
+export { addData, reset, addLike, reported, addComment, hideSuggested, searchTags, sortByLikes, sortByAlpha};

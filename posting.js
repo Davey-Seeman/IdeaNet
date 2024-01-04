@@ -87,8 +87,7 @@ function showPost(data,ideaNumber,key)
 		likesIcon.setAttribute("id","likesOnPost" + ideaNumber);
         likesIcon.setAttribute("key",key)
 
-        console.log(key)
-		likesIcon.setAttribute("onclick", "import('./main.js').then(module => module.addLike(this,fullData.likes))");
+		likesIcon.setAttribute("onclick", "import('./main.js').then(module => module.addLike(this))");
 		header.appendChild(likesIcon);
 		likesText = document.createElement("p");
 		likesText.setAttribute("id", "likesCount" + ideaNumber);
@@ -202,7 +201,7 @@ function showPost(data,ideaNumber,key)
     	//counter ++;
 
 		allComments = Object.values(data);
-        console.log(allComments)
+        consoleconsole.log(allComments)
 
 		commentDisplay(allComments); //put comment drawing in a seperate function because it will have to be called multiple times (e.g. in sorting functions)
 	};*/

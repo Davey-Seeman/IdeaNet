@@ -1,7 +1,8 @@
- 	function sortTagged(tagName){ //searches through database for all posts that match this tag and then displays only them
- 		reset();
+function sortTagged(tagName){ //searches through database for all posts that match this tag and then displays only them
+    //reset();
+    document.getElementById("postSection").innerHTML = "";
 
- 		tag = tagName.id.split("tagName: ")[1].toLowerCase();
+    tag = tagName.id.split("tagName: ")[1].toLowerCase();
 
   	//display only values with tag in dataHold dictionary:
 
@@ -42,10 +43,13 @@
 
  	};
 
-  function sortByLikes (){
-    reset();
-
-    //sort dataHold dictionary by likes: 
+  /*function sortByLikes (){
+    //reset();
+    document.getElementById("postSection").innerHTML = "";
+    import('./main.js').then(module => module.ideas)
+    console.log(import('./main.js').then(module => module.ideas))
+    
+    /*OLD WAY: sort dataHold dictionary by likes: 
 
     holdList = Object.values(dataHold);
     likesSorted = holdList.sort(function(a, b) { return b.likes - a.likes; }); // Sort by likes
@@ -68,11 +72,12 @@
       likeBtn.classList.add("dateSorted" + (i + 1)); //changing class allows addLike function to assess post based on its class
     };
 
-  };
+  };*/
 
 
-  function sortByDate (){
-    reset();
+  /*function sortByDate (){
+    //reset();
+    document.getElementById("postSection").innerHTML = "";
     entriesCount = Object.keys(dataHold).length + 1; //function is done with oldDataHold in case dataHold was already changed in sortByLikes
     
     for (const i in dataHold) //draws posts in reverse order, from newest to oldest, looping through oldDataHold dictionary (not dataHold because that would be changed if sortingByLikes was already done)
@@ -101,4 +106,4 @@
         commentDisplay(commentArray, parseInt(loopCount));
 
       };
-  };
+  };*/

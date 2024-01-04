@@ -82,9 +82,9 @@
 				  <button class="sortbtn">Sort by <i class="fa fa-angle-double-down"></i> </button>
 				  <div class="sort-content"> 
 				  	<br>
-				    <button onclick = "sortByLikes();">Likes</button>
+				    <button onclick = "import('./main.js').then(module => module.sortByLikes())">Likes</button>
 				    <br>
-				    <button onclick = "sortByDate();">Newest</button>
+				    <button onclick = "import('./main.js').then(module => module.sortByAlpha())">A to Z</button>
 				  </div>
 				</div>
 
