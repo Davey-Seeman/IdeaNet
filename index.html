@@ -16,16 +16,16 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/7.6.0/firebase-app.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/7.6.0/firebase-analytics.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/7.6.0/firebase-auth.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/7.6.0/firebase-database.js"></script>
+        <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+        <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+        <script type="module" src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
         <script src="https://apis.google.com/js/platform.js" async defer></script>
         <script src = "posting.js"></script>
         <script src = "sorting.js"></script>
+        <script type = "module" src = "main.js"></script>
 
 	</head>
-	<body id="top" onclick = "hideSuggested();">
+	<body id="top" script="addEventListener('DOMActivate', (event) => {hideSuggested()})"> 
 
 		<!-- Header/Banner -->
 			<section id="banner" class="header">
@@ -65,7 +65,7 @@
 					        	<input id = "tagInput" type="text" class="tagInput" placeholder="Optional: add some tags (e.g. sports)">
 								<span class="tooltiptext">Tags are Separated by Spaces</span>
 							</div>
-					        <input id="submit" class="submit" type="submit" value="Submit" onclick="addData()">
+                                <input id="submit" class="submit" type="submit" value="Submit" onclick="import('./main.js').then(module => module.addData())">
 
 					    </div>
 				    </div>
@@ -112,238 +112,7 @@
 				</div>
 			</footer>
 
-		<script>
-
-		var config = 
-        {
-            apiKey: "AIzaSyCgoPa8X6juYqo-hguA-bFxHpZNWMlDVeM",
-		    authDomain: "ideanetbydaveyseeman.firebaseapp.com",
-		    databaseURL: "https://ideanetbydaveyseeman-default-rtdb.firebaseio.com",
-		    projectId: "ideanetbydaveyseeman",
-		    storageBucket: "ideanetbydaveyseeman.appspot.com",
-		    messagingSenderId: "265128709776",
-		    appId: "1:265128709776:web:97a62d1a6970653dc1d215",
-		    measurementId: "G-5R2GXVK9FV"
-        };
-    
-        firebase.initializeApp(config);
-        var database = firebase.database();
-        var ref = database.ref("Ideas");
-        ref.once("value", gotList, errData); //inital display of posts - all posting functions on posting.js file
-
-        reset();
-        oldDataHold = dataHold = {};
-
-
-        function reset(){ //resets variables to be reused in sorting functions
-        	document.getElementById("postSection").innerHTML = "";
-        	ideaNumber = counter = 0;
-	        likedAlrdy = reportedAlrdy = false;
-        };
-
-        function addData() //adds new idea post to the database
-      	{
-      		ideaNumber = Object.values(oldDataHold).length;
-
-        	tit = document.getElementById("titleInput").value;
-        	des = document.getElementById("descriptionInput").value;
-        	aud = document.getElementById("audienceInput").value;
-        	imp = document.getElementById("importanceInput").value;
-        	img = document.getElementById("imageInput").value;
-        	tags = document.getElementById("tagInput").value;
-
-        	tagArr = tags.split(" ");
-        	tagObj = {};
-
-        	for (var i = 0; i < tagArr.length; i++){ //contstruct obj containing all inputted tags w each word from input
-        		if(tagArr[i]){ //only add to database if tag is truthy
-        			tagObj[i] = tagArr[i]; //tag index system may skip values if user inputs multiple spaces in a row, however this does not affect the program
-        		};
-        	};
-
-        	if(tit.length == 0 || des.length == 0 || aud.length == 0 || imp.length == 0){  //end function if not all input boxes are full on idea submit page
-        		alert("Please input in all fields");
-            	return;
-            };
-
-            if(tit.split(' ').length > 9) { //check if title is too long (part of success criteria 1)
-            	alert("Your title is too long");
-            	return;
-            };
-
-            if (img.match(/\.(jpeg|jpg|gif|png)$/) == null){  //also check if image is invalid seperatedly as it is a success criteria
-
-            	//case where img is invalid
-		        if(confirm("You are sumbitting a post without an image, is that ok?") == false){ //confirmation
-		        		return;
-		    	};
-		    };
-
-            //function will only continue if url is valid or user clicked "Ok" in response to the invalid image confirmation
-
-    		var data = //Idea data
-
-                {
-                    title: tit,
-                    description: des,
-                    targetAudience: aud,
-                    importance: imp,
-                    imageURL: img,
-                    likes: 0,
-                    reports: 0,
-                    tags: tagObj,
-                    comments: 0
-                }
-
-            ref.child('Idea' + (ideaNumber+1)).set(data);
-            postModal.style.display = "none";
-
-            data.tags = tagArr; //for data passed into onscreen addPost function
-
-            alert("Your Idea Has Been Posted... Thank You!");
-            window.location.reload();
-       	};
-
-        function addLike(currentPost){
-
-        	try { //postNumber is based on class name IF it was called after a sorting function. Otherwise null
-	   			postNumber = currentPost.className.match(/\d+/g)[0];  //regex to grab # from id
-			} catch { //If addLike is called directly from original posting function
-				postNumber = currentPost.id.match(/\d+/g)[0]; //regex to grab # from id
-			};
-
-			likesNumber = oldDataHold["Idea" + postNumber]["likes"]; // retrieve likes to be updated
-
-			if(likedAlrdy == false){ //check if post has already been liked
-				newLikes = likesNumber + 1; //increment likes by 1
-			} else { 
-				newLikes = likesNumber; //remove like if post has already been liked
-			};
-
-			likedAlrdy = !likedAlrdy; //toggle boolean
-
-			increment = database.ref("Ideas/Idea" + postNumber);
-			increment.update({likes: newLikes}); //add to firebase
-
-			document.getElementById("likesCount" + currentPost.id.match(/\d+/g)[0]).innerHTML = newLikes //add 1 to the on screen like count //use id no matter what for onscreen changes
-
-			document.getElementById("likesPost" + currentPost.id.match(/\d+/g)[0]).innerHTML = newLikes //add 1 to the browsing page on-hover like count
-		};
-
-		function addComment(currentPost){
-
-			try { //comment section number is based on class name IF it was called after a sorting function. Otherwise null
-	   			commentNumber = currentPost.className.match(/\d+/g)[0];  //regex to grab # from id
-			} catch { //If addLike is called directly from original posting function
-				commentNumber = currentPost.id.match(/\d+/g)[0]; //regex to grab # from id
-			};
-
-            comment = document.getElementById("commentTxt" + commentNumber).value;
-
-            if(comment.length){
-
-		        onScreenComments = document.getElementById("commentList" + commentNumber);
-
-		        commentEntry = document.createElement("p");
-			    commentEntry.className = "idea-comments";
-			    commentEntry.appendChild(document.createTextNode(comment));
-
-		        onScreenComments.appendChild(commentEntry); //add comment onscreen
-
-				//add <br> line breaks to comment based on how many lines comment is to avoid overlap over other comments
-
-				if (comment.length > 45){ //there are approximately 45 characters in a line
-					approxLineNumber = String(comment.length/45).charAt(0);
-					linebreak = document.createElement("br");
-					for (j = 0; j < approxLineNumber; j++){
-						onScreenComments.appendChild(linebreak); //add line break approxLineNumber times
-					};
-				};
-
-			   updateKey = database.ref("Ideas/Idea" + commentNumber + "/comments");
-		       updateKey.push(comment); //add to database
-
-	  		} else {
-
-	  			alert("No comment has been inputted");
-
-	  		};
-		};
-
-		function reported(currentPost){ //adds report to database
-
-        	reportNumber = currentPost.id.match(/\d+/g)[0]; //regex to grab # from id
-
-			increment = database.ref("Ideas/Idea" + reportNumber);
-
-			if(reportedAlrdy == false){ //check if post has already been reported
-				newReported = reportNumber + 1;
-				increment.update({reports: newReported}); //increment report number by 1
-				alert("Your report has been recorded");
-				reportedAlrdy = true;
-
-				//remove post from firebase database if the number of reports are equal to or greater than 1/5 of the number of likes:
-
-				likesNumber = dataHold["Idea" + reportNumber]["likes"];
-
-				if (likesNumber/5 <= newReported){
-					//increment.remove(); //this line removes idea from firebase database. However instead of removing the idea from the database I will add the post to a "deletable" section of the database so that I (the client) could review whether it should be taken down or the report button was mistakenly pressed: (the remove() feature will be used if my website gets to populated to monitor)
-
-					deletableSection = database.ref("Deletable");
-					title = document.getElementById("title" + reportNumber);
-					deletableSection.push("Delete Post: " + title.innerHTML);
-				};
-			};
-
-		};
-
-        function showSuggested(){
-
-       		document.getElementById("suggestions").style.display = "block"; //make visible
-
-       		document.getElementById("suggestions").innerHTML = " "; //clear suggestions 
-
-       		//the following code searches the firebase database to find tags that match the input:
-
-       		ref.once("value", searchTags, errData);
-       	};
-
-       	function searchTags(data){
-       		data = data.val();
-
-       		input = document.getElementById("searchInput").value;
-       		suggestionCounter = 0; //used limit # of tag suggestions to 4
-       		suggestionList = []; //to make sure the program does not show the same suggestion twice
-
-       		baseLoop:
-       		for (const idea in data){ //loops through ideas
-       			for (const tags in data[idea]["tags"]){ //loops through all tags on each idea
-
-       				singleTag = data[idea]["tags"][tags].toLowerCase(); //keep everything lower case
-
-       				if (singleTag.includes(input.toLowerCase())){ //check if input is contained in any tags
-       					if (suggestionList.includes(singleTag)){ //make sure same tag cannot be shown twice
-       						continue;
-       					};
-       					suggestionList.push(singleTag);
-       					newSuggestion = document.createElement("button");
-       					newSuggestion.appendChild(document.createTextNode(singleTag));
-       					newSuggestion.setAttribute("id","tagName: " + singleTag);
-       					newSuggestion.setAttribute("onclick","sortTagged(this)");
-       					document.getElementById("suggestions").appendChild(newSuggestion);
-       					suggestionCounter ++;
-       					if (suggestionCounter > 3) { //maximize suggestionCounter to 4
-       						break baseLoop;
-       					};
-       				};
-       			};
-       		};
-       	};
-
-       	function hideSuggested(){
-       		document.getElementById("suggestions").style.display = "none";
-       	};
-
+		<script type="module">
 		</script>
 			
 
